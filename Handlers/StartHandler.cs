@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using repetitorbot.Entities.States;
+using repetitorbot.Services.Common;
+
 namespace repetitorbot.Handlers;
 
-internal class StartHandler(AppDbContext dbContext) : Handler
+internal class StartHandler(AppDbContext dbContext) : IHandler
 {
     private const int ItemsPerPage = 6;
     public override async Task Handle(Context context)
