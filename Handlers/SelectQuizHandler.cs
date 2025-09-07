@@ -1,3 +1,4 @@
+using repetitorbot.Constants;
 using repetitorbot.Entities.States;
 using Telegram.Bot;
 
@@ -12,7 +13,7 @@ internal class SelectQuizHandler(ITelegramBotClient client) : IMiddleware
             return;
         }
 
-        if (!Guid.TryParse(data.AsSpan()["quizId:".Length..], out var quizId))
+        if (!Guid.TryParse(data.AsSpan()[Callback.QuizIdPrefix.Length..], out var quizId))
         {
             return;
         }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using repetitorbot;
+using repetitorbot.Constants;
 using repetitorbot.Extensions;
 using repetitorbot.Handlers;
 using repetitorbot.Middlewares;
@@ -38,19 +39,19 @@ var host = Host.CreateDefaultBuilder(args)
                 x.Use<ImportQuizHandler>();
             });
 
-            x.Callback(x => x is "forward", x =>
+            x.Callback(x => x is Callback.ForwardPage, x =>
             {
                 x.Use<ForwardPageHandler>();
                 x.Use<RenderPageHandler>();
             });
 
-            x.Callback(x => x is "back", x =>
+            x.Callback(x => x is Callback.BackPage, x =>
             {
                 x.Use<BackPageHandler>();
                 x.Use<RenderPageHandler>();
             });
 
-            x.Callback(x => x.StartsWith("quizId:"), x =>
+            x.Callback(x => x.StartsWith(Callback.QuizIdPrefix), x =>
             {
                 x.Use<SelectQuizHandler>();
             });

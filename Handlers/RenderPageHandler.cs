@@ -1,3 +1,4 @@
+using repetitorbot.Constants;
 using repetitorbot.Entities.States;
 using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -31,11 +32,11 @@ internal class RenderPageHandler(ITelegramBotClient client, AppDbContext dbConte
         {
             var keyboard = new InlineKeyboardMarkup(
                 inlineKeyboard: quizes
-                    .Select(x => new InlineKeyboardButton(x.Name, $"quizId:{x.Id}"))
+                    .Select(x => new InlineKeyboardButton(x.Name, $"{Callback.QuizIdPrefix}{x.Id}"))
                     .Chunk(3)
                     .Append([
-                        new InlineKeyboardButton("←", "back"),
-                        new InlineKeyboardButton("→", "forward")
+                        new InlineKeyboardButton("←", Callback.BackPage),
+                        new InlineKeyboardButton("→", Callback.ForwardPage)
                     ])
             );
 
