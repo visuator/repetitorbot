@@ -18,6 +18,24 @@ namespace repetitorbot
                 .HasDiscriminator<string>("Type")
                 .HasValue<QuizState>("QuizStates")
                 .HasValue<SelectQuizState>("SelectQuizStates");
+            modelBuilder.Entity<User>()
+                .HasOne(x => x.State)
+                .WithOne(x => x.User)
+                .HasForeignKey<State>(x => x.UserId);
+
+            modelBuilder.Entity<Quiz>()
+                .HasData([
+                    new() { Id = Guid.NewGuid(), Name = "test1" },
+                    new() { Id = Guid.NewGuid(), Name = "test2" },
+                    new() { Id = Guid.NewGuid(), Name = "test3" },
+                    new() { Id = Guid.NewGuid(), Name = "test4" },
+                    new() { Id = Guid.NewGuid(), Name = "test5" },
+                    new() { Id = Guid.NewGuid(), Name = "test6" },
+                    new() { Id = Guid.NewGuid(), Name = "test7" },
+                    new() { Id = Guid.NewGuid(), Name = "test8" },
+                    new() { Id = Guid.NewGuid(), Name = "test9" },
+                ]);
+
             base.OnModelCreating(modelBuilder);
         }
     }

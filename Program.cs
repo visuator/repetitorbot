@@ -4,6 +4,7 @@ using repetitorbot.Extensions;
 using repetitorbot.Handlers;
 using repetitorbot.Middlewares;
 using repetitorbot.Services;
+using repetitorbot.Services.Common;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 
@@ -22,15 +23,46 @@ var host = Host.CreateDefaultBuilder(args)
             options.UseSqlite(context.Configuration.GetConnectionString("Database") ?? throw new InvalidOperationException("empty database connection string"));
         }, ServiceLifetime.Scoped);
 
+        services.AddSingleton<TelegramFileService>();
+
         services.AddRouting(x =>
         {
-            x.Command<StartHandler>("start");
+            x.Command("start", x =>
+            {
+                x.Use<StartHandler>();
+                x.Use<RenderPageHandler>();
+            });
+
+            x.File("json", x =>
+            {
+                x.Use<ImportQuizHandler>();
+            });
+
+            x.Callback(x => x is "forward", x =>
+            {
+                x.Use<ForwardPageHandler>();
+                x.Use<RenderPageHandler>();
+            });
+
+            x.Callback(x => x is "back", x =>
+            {
+                x.Use<BackPageHandler>();
+                x.Use<RenderPageHandler>();
+            });
+
+            x.Callback(x => x.StartsWith("quizId:"), x =>
+            {
+                x.Use<SelectQuizHandler>();
+            });
         });
 
         services.AddPipeline(x =>
         {
-            x.UseMiddleware<UserMiddleware>();
-            x.UseMiddleware<StateMiddleware>();
+            x.Use<EnsureUserMiddleware>();
+            x.Use<SetStateMiddleware>();
+            x.Use<RouterMiddleware>();
+            x.Use<SaveStateMiddleware>();
+            x.Use<AnswerCallbackQueryMiddleware>();
         });
     })
     .Build();

@@ -3,11 +3,11 @@ using repetitorbot.Handlers;
 
 namespace repetitorbot.Services;
 
-internal class PipelineBuilder(IServiceCollection services)
+internal class PipelineBuilder(IServiceCollection services, string? serviceKey = null)
 {
     private readonly List<Func<IServiceProvider, UpdateDelegate, UpdateDelegate>> _components = [];
 
-    public PipelineBuilder UseMiddleware<TMiddleware>() where TMiddleware : class, IMiddleware
+    public PipelineBuilder Use<TMiddleware>() where TMiddleware : class, IMiddleware
     {
         services.TryAddScoped<TMiddleware>();
 
@@ -17,12 +17,24 @@ internal class PipelineBuilder(IServiceCollection services)
 
     public void Build()
     {
-        Func<IServiceProvider, UpdateDelegate> pipeline = _ => _ => Task.CompletedTask;
+        if (serviceKey is null)
+        {
+            services.AddScoped(CreatePipeline);
+        }
+        else
+        {
+            services.AddKeyedScoped(serviceKey, (provider, _) => CreatePipeline(provider));
+        }
+    }
+
+    private UpdateDelegate CreatePipeline(IServiceProvider provider)
+    {
+        UpdateDelegate pipeline = _ => Task.CompletedTask;
         for (var i = _components.Count - 1; i >= 0; i--)
         {
-            pipeline = provider => _components[i](provider, pipeline(provider));
+            pipeline = _components[i](provider, pipeline);
         }
-        services.AddScoped(provider => pipeline(provider));
+        return pipeline;
     }
 
     private static UpdateDelegate CreateMiddleware<TMiddleware>(IServiceProvider provider, UpdateDelegate next) where TMiddleware : IMiddleware

@@ -1,6 +1,5 @@
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using repetitorbot.Handlers;
-using repetitorbot.Services.Common;
+using repetitorbot.Services;
 
 namespace repetitorbot.Middlewares;
 
@@ -12,7 +11,7 @@ internal class RouterMiddleware(IServiceProvider provider, IEnumerable<Route> ro
         foreach (var route in routes)
         {
             if (await route(provider, context))
-                return;
+                break;
         }
         await next(context);
     }
@@ -21,38 +20,86 @@ internal class RouteBuilder(IServiceCollection services)
 {
     private List<Route> _routes { get; } = [];
 
-    public RouteBuilder Command<THandler>(string name) where THandler : class, IHandler
+    public RouteBuilder Command(string name, Action<PipelineBuilder> configure)
     {
-        services.TryAddScoped<THandler>();
-        
+        PipelineBuilder builder = new(services, name);
+
+        configure(builder);
+
+        builder.Build();
+
         _routes.Add(async (provider, context) =>
         {
-            var text = context.Update.GetMessageText();
-
-            if (text.StartsWith('/') && text.AsSpan()[1..].Equals(name))
+            if (context.Update.Message is not { Text: string text })
             {
-                await provider.GetRequiredService<THandler>().Handle(context);
+                return false;
+            }
+
+            if (text[0] == '/' && text[1..].Equals(name))
+            {
+                await provider.GetRequiredKeyedService<UpdateDelegate>(name)(context);
                 return true;
             }
 
             return false;
         });
+
         return this;
     }
 
-    public RouteBuilder RouteWhen<THandler>(Func<Context, bool> predicate) where THandler : class, IHandler
+    public RouteBuilder File(string extension, Action<PipelineBuilder> configure)
     {
-        services.TryAddScoped<THandler>();
+        PipelineBuilder builder = new(services, extension);
+
+        configure(builder);
+
+        builder.Build();
 
         _routes.Add(async (provider, context) =>
         {
-            if (predicate(context))
+            if (context.Update.Message?.Document is not { FileName: string fileName })
             {
-                await provider.GetRequiredService<THandler>().Handle(context);
+                return false;
+            }
+
+            if (Path.GetExtension(fileName).EndsWith(extension))
+            {
+                await provider.GetRequiredKeyedService<UpdateDelegate>(extension)(context);
                 return true;
             }
+
             return false;
         });
+
+        return this;
+    }
+
+    public RouteBuilder Callback(Func<string, bool> predicate, Action<PipelineBuilder> configure)
+    {
+        var id = Guid.NewGuid().ToString();
+
+        PipelineBuilder builder = new(services, id);
+
+        configure(builder);
+
+        builder.Build();
+
+        _routes.Add(async (provider, context) =>
+        {
+            if (context.Update.CallbackQuery is not { Data: string data })
+            {
+                return false;
+            }
+
+            if (predicate(data))
+            {
+                await provider.GetRequiredKeyedService<UpdateDelegate>(id)(context);
+                return true;
+            }
+
+            return false;
+        });
+
         return this;
     }
 

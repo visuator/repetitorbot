@@ -3,7 +3,7 @@ using repetitorbot.Handlers;
 
 namespace repetitorbot.Middlewares;
 
-internal class StateMiddleware(AppDbContext dbContext) : IMiddleware
+internal class SetStateMiddleware(AppDbContext dbContext) : IMiddleware
 {
     public async Task Invoke(Context context, UpdateDelegate next)
     {
