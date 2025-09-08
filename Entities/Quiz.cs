@@ -3,8 +3,17 @@
     internal class Quiz
     {
         public Guid Id { get; set; }
-        public string Name { get; set; } = null!;
+        public long? UserId { get; set; }
+        public User? User { get; set; }
+        public string? Name { get; set; } = null!;
+        public bool Published { get; set; }
+        public QuizType Type { get; set; }
         public List<QuizQuestion> Questions { get; set; } = [];
+    }
+    internal enum QuizType
+    {
+        Public,
+        Private
     }
     internal class QuizQuestion
     {
@@ -13,6 +22,26 @@
         public Quiz Quiz { get; set; } = null!;
         public string Question { get; set; } = null!;
         public int Order { get; set; }
+        public MatchAlgorithm MatchAlgorithm { get; set; }
+        public List<QuizQuestionCategoryLink> Categories { get; set; } = [];
+    }
+    internal class QuizQuestionCategoryLink
+    {
+        public Guid QuizQuestionId { get; set; }
+        public QuizQuestion QuizQuestion { get; set; } = null!;
+        public Guid QuizQuestionCategoryId { get; set; }
+        public QuizQuestionCategory QuizQuestionCategory { get; set; } = null!;
+    }
+    internal class QuizQuestionCategory
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = null!;
+        public List<QuizQuestionCategoryLink> Questions { get; set; } = [];
+    }
+    internal enum MatchAlgorithm
+    {
+        Fuzzy,
+        Exact
     }
     internal class TextQuizQuestion : QuizQuestion
     {

@@ -15,6 +15,9 @@ internal class RenderPageHandler(ITelegramBotClient client, AppDbContext dbConte
         }
 
         var quizes = dbContext.Quizes
+            .Where(x => state.WherePublished == null ? true : x.Published == state.WherePublished)
+            .Where(x => state.Users ? x.UserId == context.User.Id : true)
+            .Where(x => state.Type == null ? true : x.Type == state.Type)
             .Skip(state.ItemsPerPage * (state.CurrentPage - 1))
             .Take(state.ItemsPerPage)
             .OrderBy(x => x.Name)
@@ -31,7 +34,7 @@ internal class RenderPageHandler(ITelegramBotClient client, AppDbContext dbConte
 
         var keyboard = new InlineKeyboardMarkup(
             inlineKeyboard: quizes
-                .Select(x => new InlineKeyboardButton(x.Name, $"{Callback.QuizIdPrefix}{x.Id}"))
+                .Select(x => new InlineKeyboardButton(x.Name!, $"{Callback.QuizIdPrefix}{x.Id}"))
                 .Chunk(3)
                 .Append([
                     new InlineKeyboardButton("←", Callback.BackPage),

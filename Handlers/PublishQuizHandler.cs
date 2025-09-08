@@ -1,24 +1,25 @@
+
 using Microsoft.EntityFrameworkCore;
 using repetitorbot.Entities.States;
 
 namespace repetitorbot.Handlers;
 
-internal class StartHandler(AppDbContext dbContext) : IMiddleware
+internal class PublishQuizHandler(AppDbContext dbContext) : IMiddleware
 {
     private const int ItemsPerPage = 6;
     public async Task Invoke(Context context, UpdateDelegate next)
     {
-        var count = await dbContext.Quizes.CountAsync(x => x.Published);
+        var count = await dbContext.Quizes.CountAsync(x => !x.Published && x.UserId == context.User.Id);
         var pages = (int)Math.Ceiling(count / (double)ItemsPerPage);
 
-        context.State = new StartSelectQuizState()
+        context.State = new PublishSelectQuizState()
         {
             CurrentPage = 1,
             ItemsPerPage = ItemsPerPage,
             PagesCount = pages,
-            WherePublished = true,
-            UserId = context.User.Id,
-            Type = Entities.QuizType.Public
+            WherePublished = false,
+            Users = true,
+            UserId = context.User.Id
         };
 
         await next(context);

@@ -22,6 +22,5 @@ internal class QuizQuestionRespone
 {
     public Guid Id { get; set; }
     public Guid UserQuizQuestionId { get; set; }
-    public UserQuizQuestion UserQuizQuestion { get; set; } = null!;
     public string Text { get; set; } = null!;
 }

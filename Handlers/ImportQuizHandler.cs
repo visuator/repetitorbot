@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 using repetitorbot.Entities;
 using repetitorbot.Services.Common;
 using Telegram.Bot;
@@ -11,6 +12,7 @@ namespace repetitorbot.Handlers;
 internal class QuizQuestionDto
 {
     public string Question { get; set; } = null!;
+    public List<string> CategoryNames { get; set; } = [];
 }
 internal class TextQuizQuestionDto : QuizQuestionDto
 {
@@ -46,22 +48,18 @@ internal class ImportQuizHandler(ITelegramBotClient client, TelegramFileService 
             dto = JsonSerializer.Deserialize<QuizDto>(ms) ?? throw new InvalidOperationException("invalid json quiz format");
         }
 
+        List<QuizQuestion> questions = new(dto.Questions.Count);
+        var order = 1;
+        foreach (var question in dto.Questions)
+        {
+            questions.Add(await Map(question, order));
+            order++;
+        }
+
         await dbContext.Quizes.AddAsync(new()
         {
             Name = dto.Name,
-            Questions = [.. dto.Questions.Select<QuizQuestionDto, QuizQuestion>((x, i) => x switch {
-                TextQuizQuestionDto text => new TextQuizQuestion(){
-                    Question = text.Question,
-                    Answer = text.Answer,
-                    Order = i + 1
-                },
-                PollQuizQuestionDto poll => new PollQuizQuestion(){
-                    Question = poll.Question,
-                    Order = i + 1,
-                    Variants = [.. poll.Variants.Select(x => new PollQuestionVariant() { IsCorrect = x.IsCorrect, Value = x.Value })]
-                },
-                _ => throw new InvalidOperationException("not supported")
-            })]
+            Questions = questions
         });
         await dbContext.SaveChangesAsync();
 
@@ -75,5 +73,31 @@ internal class ImportQuizHandler(ITelegramBotClient client, TelegramFileService 
         );
 
         await next(context);
+    }
+
+    private async Task<QuizQuestion> Map(QuizQuestionDto dto, int order)
+    {
+        var categories = await dbContext.QuizQuestionCategories
+            .Where(x => dto.CategoryNames.Contains(x.Name))
+            .Select(x => new QuizQuestionCategoryLink() { QuizQuestionCategoryId = x.Id })
+            .ToListAsync();
+        return dto switch
+        {
+            TextQuizQuestionDto text => new TextQuizQuestion()
+            {
+                Question = text.Question,
+                Categories = categories,
+                Answer = text.Answer,
+                Order = order
+            },
+            PollQuizQuestionDto poll => new PollQuizQuestion()
+            {
+                Question = poll.Question,
+                Categories = categories,
+                Order = order,
+                Variants = [.. poll.Variants.Select(x => new PollQuestionVariant() { IsCorrect = x.IsCorrect, Value = x.Value })]
+            },
+            _ => throw new InvalidOperationException("not supported")
+        };
     }
 }

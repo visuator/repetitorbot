@@ -37,6 +37,23 @@ var host = Host.CreateDefaultBuilder(args)
                 x.Use<RenderPageHandler>();
             });
 
+            x.Command("new", x =>
+            {
+                x.Use<CreateQuizHandler>();
+            });
+
+            x.Command("publish", x =>
+            {
+                x.Use<PublishQuizHandler>();
+                x.Use<RenderPageHandler>();
+            });
+
+            x.Command("questions", x =>
+            {
+                x.Use<AddQuestionHandler>();
+                x.Use<RenderPageHandler>();
+            });
+
             x.File("json", x =>
             {
                 x.Use<ImportQuizHandler>();
@@ -54,13 +71,29 @@ var host = Host.CreateDefaultBuilder(args)
                 x.Use<RenderPageHandler>();
             });
 
-            x.Callback(x => x.StartsWith(Callback.QuizIdPrefix), x =>
+            x.When<StartSelectQuizState>(x =>
             {
                 x.Use<SelectQuizHandler>();
                 x.Use<StartQuizHandler>();
                 x.Use<NextQuestionHandler>();
                 x.Use<SendQuestionHandler>();
-            });
+            }, (_, context) => context.Update.CallbackQuery?.Data is string s && s.StartsWith(Callback.QuizIdPrefix));
+
+            x.When<PublishSelectQuizState>(x =>
+            {
+                x.Use<SetPublishedQuizHandler>();
+            }, (x, context) => context.Update.CallbackQuery?.Data is string s && s.StartsWith(Callback.QuizIdPrefix));
+
+            x.When<QuestionsSelectQuizState>(x =>
+            {
+                x.Use<SetQuestionsStateHandler>();
+                x.Use<SendQuestionPropertyHandler>();
+            }, (x, context) => context.Update.CallbackQuery?.Data is string s && s.StartsWith(Callback.QuizIdPrefix));
+
+            x.When<AddQuestionsState>(x =>
+            {
+                x.Use<SetQuestionTypeHandler>();
+            }, (x, context) => context.Update.CallbackQuery?.Data is string s && (s == Callback.PollQuestionType || s == Callback.TextQuestionType));
 
             x.When<QuizState>(x =>
             {
@@ -68,6 +101,11 @@ var host = Host.CreateDefaultBuilder(args)
                 x.Use<NextQuestionHandler>();
                 x.Use<SendQuestionHandler>();
             });
+
+            x.When<CreateQuizState>(x =>
+            {
+                x.Use<SetQuizNameHandler>();
+            }, (x, _) => x.Quiz.Name is null);
         });
 
         services.AddPipeline(x =>
@@ -84,6 +122,7 @@ var host = Host.CreateDefaultBuilder(args)
 using (var scope = host.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.EnsureDeletedAsync();
     await db.Database.EnsureCreatedAsync();
 }
 

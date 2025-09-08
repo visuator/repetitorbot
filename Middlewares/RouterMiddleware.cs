@@ -103,7 +103,7 @@ internal class RouteBuilder(IServiceCollection services)
         return this;
     }
 
-    public RouteBuilder When<TState>(Action<PipelineBuilder> configure, Func<TState, bool>? predicate = null)
+    public RouteBuilder When<TState>(Action<PipelineBuilder> configure, Func<TState, Context, bool>? predicate = null)
     {
         var id = Guid.NewGuid().ToString();
 
@@ -117,7 +117,7 @@ internal class RouteBuilder(IServiceCollection services)
         {
             if (context.State is TState state)
             {
-                if (predicate is not null && !predicate(state))
+                if (predicate is not null && !predicate(state, context))
                 {
                     return false;
                 }
