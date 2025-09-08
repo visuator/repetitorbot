@@ -9,9 +9,9 @@ namespace repetitorbot
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Quiz> Quizes { get; set; } = null!;
         public DbSet<State> States { get; set; } = null!;
-        public DbSet<LocalQuestion> LocalQuestions { get; set; } = null!;
-        public DbSet<QuizResponse> QuizResponses { get; set; } = null!;
-        
+        public DbSet<UserQuizQuestion> UserQuizQuestions { get; set; } = null!;
+        public DbSet<QuizQuestionRespone> QuizQuestionResponses { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<State>()
@@ -22,6 +22,9 @@ namespace repetitorbot
                 .HasOne(x => x.State)
                 .WithOne(x => x.User)
                 .HasForeignKey<State>(x => x.UserId);
+
+            modelBuilder.Entity<QuizQuestionRespone>()
+                .HasKey(x => new { x.UserQuizQuestionId });
 
             modelBuilder.Entity<Quiz>()
                 .HasData([

@@ -26,38 +26,37 @@ internal class RenderPageHandler(ITelegramBotClient client, AppDbContext dbConte
                 chatId: context.Update.GetChatId(),
                 text: "📭 Сейчас нет доступных опросников."
             );
-            context.State = null;
+            return;
+        }
+
+        var keyboard = new InlineKeyboardMarkup(
+            inlineKeyboard: quizes
+                .Select(x => new InlineKeyboardButton(x.Name, $"{Callback.QuizIdPrefix}{x.Id}"))
+                .Chunk(3)
+                .Append([
+                    new InlineKeyboardButton("←", Callback.BackPage),
+                    new InlineKeyboardButton("→", Callback.ForwardPage)
+                ])
+        );
+
+        if (state.MessageId is not int messageId)
+        {
+            var message = await client.SendMessage(
+                chatId: context.Update.GetChatId(),
+                replyMarkup: keyboard,
+                text: "🔎 Найдено несколько опросников. Выбери нужный:"
+            );
+            state.MessageId = message.Id;
         }
         else
         {
-            var keyboard = new InlineKeyboardMarkup(
-                inlineKeyboard: quizes
-                    .Select(x => new InlineKeyboardButton(x.Name, $"{Callback.QuizIdPrefix}{x.Id}"))
-                    .Chunk(3)
-                    .Append([
-                        new InlineKeyboardButton("←", Callback.BackPage),
-                        new InlineKeyboardButton("→", Callback.ForwardPage)
-                    ])
+            await client.EditMessageReplyMarkup(
+                chatId: context.Update.GetChatId(),
+                messageId: messageId,
+                replyMarkup: keyboard
             );
-
-            if (state.MessageId is not int messageId)
-            {
-                var message = await client.SendMessage(
-                    chatId: context.Update.GetChatId(),
-                    replyMarkup: keyboard,
-                    text: "🔎 Найдено несколько опросников. Выбери нужный:"
-                );
-                state.MessageId = message.Id;
-            }
-            else
-            {
-                await client.EditMessageReplyMarkup(
-                    chatId: context.Update.GetChatId(),
-                    messageId: messageId,
-                    replyMarkup: keyboard
-                );
-            }
         }
+        
         await next(context);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using repetitorbot;
 using repetitorbot.Constants;
+using repetitorbot.Entities.States;
 using repetitorbot.Extensions;
 using repetitorbot.Handlers;
 using repetitorbot.Middlewares;
@@ -25,6 +26,8 @@ var host = Host.CreateDefaultBuilder(args)
         }, ServiceLifetime.Scoped);
 
         services.AddSingleton<TelegramFileService>();
+
+        services.AddScoped<IQuizEngine, SimpleQuizEngine>();
 
         services.AddRouting(x =>
         {
@@ -54,6 +57,16 @@ var host = Host.CreateDefaultBuilder(args)
             x.Callback(x => x.StartsWith(Callback.QuizIdPrefix), x =>
             {
                 x.Use<SelectQuizHandler>();
+                x.Use<StartQuizHandler>();
+                x.Use<NextQuestionHandler>();
+                x.Use<SendQuestionHandler>();
+            });
+
+            x.When<QuizState>(x =>
+            {
+                x.Use<AnswerQuestionHandler>();
+                x.Use<NextQuestionHandler>();
+                x.Use<SendQuestionHandler>();
             });
         });
 

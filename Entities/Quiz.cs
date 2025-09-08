@@ -12,6 +12,7 @@
         public Guid QuizId { get; set; }
         public Quiz Quiz { get; set; } = null!;
         public string Question { get; set; } = null!;
+        public int Order { get; set; }
     }
     internal class TextQuizQuestion : QuizQuestion
     {

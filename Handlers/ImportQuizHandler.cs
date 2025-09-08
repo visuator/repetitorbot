@@ -49,13 +49,15 @@ internal class ImportQuizHandler(ITelegramBotClient client, TelegramFileService 
         await dbContext.Quizes.AddAsync(new()
         {
             Name = dto.Name,
-            Questions = [.. dto.Questions.Select<QuizQuestionDto, QuizQuestion>(x => x switch {
+            Questions = [.. dto.Questions.Select<QuizQuestionDto, QuizQuestion>((x, i) => x switch {
                 TextQuizQuestionDto text => new TextQuizQuestion(){
                     Question = text.Question,
-                    Answer = text.Answer
+                    Answer = text.Answer,
+                    Order = i + 1
                 },
                 PollQuizQuestionDto poll => new PollQuizQuestion(){
                     Question = poll.Question,
+                    Order = i + 1,
                     Variants = [.. poll.Variants.Select(x => new PollQuestionVariant() { IsCorrect = x.IsCorrect, Value = x.Value })]
                 },
                 _ => throw new InvalidOperationException("not supported")

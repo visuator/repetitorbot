@@ -4,7 +4,7 @@ using Telegram.Bot;
 
 namespace repetitorbot.Handlers;
 
-internal class SelectQuizHandler(ITelegramBotClient client) : IMiddleware
+internal class SelectQuizHandler(ITelegramBotClient client, AppDbContext dbContext) : IMiddleware
 {
     public async Task Invoke(Context context, UpdateDelegate next)
     {
@@ -18,15 +18,17 @@ internal class SelectQuizHandler(ITelegramBotClient client) : IMiddleware
             return;
         }
 
-        if (context.State is not SelectQuizState { MessageId: int messageId })
+        if (context.State is not SelectQuizState { MessageId: int messageId, UserId: long userId })
         {
             return;
         }
 
         context.State = new QuizState()
         {
-            QuizId = quizId
+            QuizId = quizId,
+            UserId = userId
         };
+        await dbContext.States.AddAsync(context.State);
 
         await client.DeleteMessage(
             chatId: context.Update.GetChatId(),

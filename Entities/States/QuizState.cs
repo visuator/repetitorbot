@@ -5,25 +5,23 @@ internal class QuizState : State
     public Guid QuizId { get; set; }
     public Quiz Quiz { get; set; } = null!;
     public Guid? CurrentQuestionId { get; set; }
-    public List<LocalQuestion> LocalQuestions { get; set; } = [];
-    public List<QuizResponse> QuizResponses { get; set; } = [];
-    public bool Completed { get; set; }
+    public List<UserQuizQuestion> Questions { get; set; } = []; 
 }
-internal class LocalQuestion
-{
-    public Guid Id { get; set; }
-    public Guid QuizStateId { get; set; }
-    public Guid QuizQuestionId { get; set; }
-    public QuizQuestion QuizQuestion { get; set; } = null!;
-    public int Order { get; set; }
-}
-internal class QuizResponse
+internal class UserQuizQuestion
 {
     public Guid Id { get; set; }
     public Guid QuizStateId { get; set; }
     public QuizState QuizState { get; set; } = null!;
-    public Guid LocalQuestionId { get; set; }
-    public LocalQuestion LocalQuestion { get; set; } = null!;
-    public string Response { get; set; } = null!;
-    public int Ratio { get; set; }
+    public Guid QuizQuestionId { get; set; }
+    public QuizQuestion QuizQuestion { get; set; } = null!;
+    public Guid? QuizQuestionResponeId { get; set; }
+    public QuizQuestionRespone? QuizQuestionRespone { get; set; }
+    public int Order { get; set; }
+}
+internal class QuizQuestionRespone
+{
+    public Guid Id { get; set; }
+    public Guid UserQuizQuestionId { get; set; }
+    public UserQuizQuestion UserQuizQuestion { get; set; } = null!;
+    public string Text { get; set; } = null!;
 }

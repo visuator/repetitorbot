@@ -103,6 +103,34 @@ internal class RouteBuilder(IServiceCollection services)
         return this;
     }
 
+    public RouteBuilder When<TState>(Action<PipelineBuilder> configure, Func<TState, bool>? predicate = null)
+    {
+        var id = Guid.NewGuid().ToString();
+
+        PipelineBuilder builder = new(services, id);
+
+        configure(builder);
+
+        builder.Build();
+
+        _routes.Add(async (provider, context) =>
+        {
+            if (context.State is TState state)
+            {
+                if (predicate is not null && !predicate(state))
+                {
+                    return false;
+                }
+                await provider.GetRequiredKeyedService<UpdateDelegate>(id)(context);
+                return true;
+            }
+
+            return false;
+        });
+
+        return this;
+    }
+
     public void Build()
     {
         foreach (var route in _routes)
