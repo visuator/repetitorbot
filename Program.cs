@@ -93,7 +93,18 @@ var host = Host.CreateDefaultBuilder(args)
             x.When<AddQuestionsState>(x =>
             {
                 x.Use<SetQuestionTypeHandler>();
-            }, (x, context) => context.Update.CallbackQuery?.Data is string s && (s == Callback.PollQuestionType || s == Callback.TextQuestionType));
+                x.Use<SendQuestionPropertyHandler>();
+            }, (x, context) => x.CurrentProperty == AddQuestionsProperty.QuestionType);
+            x.When<AddQuestionsState>(x =>
+            {
+                x.Use<SetQuestionTextHandler>();
+                x.Use<SendQuestionPropertyHandler>();
+            }, (x, context) => x.CurrentProperty == AddQuestionsProperty.Question);
+            x.When<AddQuestionsState>(x =>
+            {
+                x.Use<SetQuestionAnswerHandler>();
+                x.Use<SendQuestionPropertyHandler>();
+            }, (x, context) => x.CurrentProperty == AddQuestionsProperty.TextAnswer);
 
             x.When<QuizState>(x =>
             {

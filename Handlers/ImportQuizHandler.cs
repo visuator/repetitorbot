@@ -59,7 +59,9 @@ internal class ImportQuizHandler(ITelegramBotClient client, TelegramFileService 
         await dbContext.Quizes.AddAsync(new()
         {
             Name = dto.Name,
-            Questions = questions
+            Questions = questions,
+            Type = QuizType.Public,
+            Published = true
         });
         await dbContext.SaveChangesAsync();
 

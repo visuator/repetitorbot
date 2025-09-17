@@ -5,13 +5,14 @@ internal class AddQuestionsState : State
     public Guid QuizId { get; set; }
     public Quiz Quiz { get; set; } = null!;
     public AddQuestionsProperty CurrentProperty { get; set; }
-    public QuestionType QuestionType { get; set; }
-    public string Value { get; set; } = null!;
+    public string? Question { get; set; }
+    public string? TextAnswer { get; set; }
+    public QuestionType? QuestionType { get; set; }
+    public int LastQuestionOrder { get; set; }
     public int LastMessageId { get; set; }
 }
 internal enum AddQuestionsProperty
 {
-    None,
     Question,
     TextAnswer,
     QuestionType

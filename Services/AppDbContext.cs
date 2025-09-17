@@ -8,9 +8,9 @@ namespace repetitorbot
     {
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Quiz> Quizes { get; set; } = null!;
+        public DbSet<QuizQuestion> QuizQuestions { get; set; } = null!; 
         public DbSet<State> States { get; set; } = null!;
         public DbSet<UserQuizQuestion> UserQuizQuestions { get; set; } = null!;
-        public DbSet<QuizQuestionRespone> QuizQuestionResponses { get; set; } = null!;
         public DbSet<QuizQuestionCategory> QuizQuestionCategories { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -29,19 +29,6 @@ namespace repetitorbot
 
             modelBuilder.Entity<QuizQuestionCategoryLink>()
                 .HasKey(x => new { x.QuizQuestionId, x.QuizQuestionCategoryId });
-
-            modelBuilder.Entity<Quiz>()
-                .HasData([
-                    new() { Id = Guid.NewGuid(), Name = "test1", Published = true },
-                    new() { Id = Guid.NewGuid(), Name = "test2", Published = true },
-                    new() { Id = Guid.NewGuid(), Name = "test3", Published = true },
-                    new() { Id = Guid.NewGuid(), Name = "test4", Published = true },
-                    new() { Id = Guid.NewGuid(), Name = "test5", Published = true },
-                    new() { Id = Guid.NewGuid(), Name = "test6", Published = true },
-                    new() { Id = Guid.NewGuid(), Name = "test7", Published = true },
-                    new() { Id = Guid.NewGuid(), Name = "test8", Published = true },
-                    new() { Id = Guid.NewGuid(), Name = "test9" },
-                ]);
 
             base.OnModelCreating(modelBuilder);
         }

@@ -7,7 +7,7 @@ internal class SelectQuizState : State
     public int PagesCount { get; set; }
     public int CurrentPage { get; set; }
     public bool? WherePublished { get; set; }
-    public bool Users { get; set; }
+    public bool OnlyFromUser { get; set; }
     public QuizType? Type { get; set; }
 }
 internal class StartSelectQuizState : SelectQuizState

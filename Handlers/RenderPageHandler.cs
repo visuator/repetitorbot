@@ -16,7 +16,7 @@ internal class RenderPageHandler(ITelegramBotClient client, AppDbContext dbConte
 
         var quizes = dbContext.Quizes
             .Where(x => state.WherePublished == null ? true : x.Published == state.WherePublished)
-            .Where(x => state.Users ? x.UserId == context.User.Id : true)
+            .Where(x => state.OnlyFromUser ? x.UserId == context.User.Id : true)
             .Where(x => state.Type == null ? true : x.Type == state.Type)
             .Skip(state.ItemsPerPage * (state.CurrentPage - 1))
             .Take(state.ItemsPerPage)

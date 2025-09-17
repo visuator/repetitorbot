@@ -16,7 +16,7 @@ internal class AddQuestionHandler(AppDbContext dbContext) : IMiddleware
             CurrentPage = 1,
             ItemsPerPage = ItemsPerPage,
             PagesCount = pages,
-            Users = true,
+            OnlyFromUser = true,
             UserId = context.User.Id
         };
 

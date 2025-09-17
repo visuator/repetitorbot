@@ -18,7 +18,7 @@ internal class PublishQuizHandler(AppDbContext dbContext) : IMiddleware
             ItemsPerPage = ItemsPerPage,
             PagesCount = pages,
             WherePublished = false,
-            Users = true,
+            OnlyFromUser = true,
             UserId = context.User.Id
         };
 
