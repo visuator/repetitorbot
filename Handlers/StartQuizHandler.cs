@@ -5,17 +5,21 @@ namespace repetitorbot.Handlers;
 
 internal class StartQuizHandler(AppDbContext dbContext) : IMiddleware
 {
+    private const int ItemsPerPage = 6;
     public async Task Invoke(Context context, UpdateDelegate next)
     {
-        if (context.State is not QuizState state)
+        var count = await dbContext.Quizes.CountAsync(x => x.Published);
+        var pages = (int)Math.Ceiling(count / (double)ItemsPerPage);
+
+        context.State = new StartSelectQuizState()
         {
-            return;
-        }
-
-        var quiz = await dbContext.Quizes.Include(x => x.Questions).SingleAsync(x => x.Id == state.QuizId);
-
-        state.Questions = [.. quiz.Questions.Select(x => new UserQuizQuestion() { QuizQuestionId = x.Id, Order = x.Order })];
-        await dbContext.SaveChangesAsync();
+            CurrentPage = 1,
+            ItemsPerPage = ItemsPerPage,
+            PagesCount = pages,
+            WherePublished = true,
+            UserId = context.User.Id,
+            Type = Entities.QuizType.Public
+        };
 
         await next(context);
     }

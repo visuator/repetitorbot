@@ -7,7 +7,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace repetitorbot.Handlers;
 
-internal class SendQuestionPropertyHandler(ITelegramBotClient client) : IMiddleware
+internal class RenderNextQuestionPropertyToFillHandler(ITelegramBotClient client) : IMiddleware
 {
     public async Task Invoke(Context context, UpdateDelegate next)
     {

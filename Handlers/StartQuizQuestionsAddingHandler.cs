@@ -5,7 +5,7 @@ using repetitorbot.Entities.States;
 
 namespace repetitorbot.Handlers;
 
-internal class SetQuestionsStateHandler(
+internal class StartQuizQuestionsAddingHandler(
     AppDbContext dbContext
 ) : IMiddleware
 {

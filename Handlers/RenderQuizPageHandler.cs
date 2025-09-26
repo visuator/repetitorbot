@@ -5,7 +5,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace repetitorbot.Handlers;
 
-internal class RenderPageHandler(ITelegramBotClient client, AppDbContext dbContext) : IMiddleware
+internal class RenderQuizPageHandler(ITelegramBotClient client, AppDbContext dbContext) : IMiddleware
 {
     public async Task Invoke(Context context, UpdateDelegate next)
     {

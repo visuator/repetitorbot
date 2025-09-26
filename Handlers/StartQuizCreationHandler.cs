@@ -4,7 +4,7 @@ using Telegram.Bot;
 
 namespace repetitorbot.Handlers;
 
-internal class CreateQuizHandler(ITelegramBotClient client) : IMiddleware
+internal class StartQuizCreationHandler(ITelegramBotClient client) : IMiddleware
 {
     public async Task Invoke(Context context, UpdateDelegate next)
     {

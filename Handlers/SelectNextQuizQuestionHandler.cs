@@ -3,7 +3,7 @@ using repetitorbot.Entities.States;
 
 namespace repetitorbot.Handlers;
 
-internal class NextQuestionHandler(AppDbContext dbContext) : IMiddleware
+internal class SelectNextQuizQuestionHandler(AppDbContext dbContext) : IMiddleware
 {
     public async Task Invoke(Context context, UpdateDelegate next)
     {

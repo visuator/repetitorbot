@@ -3,7 +3,7 @@ using repetitorbot.Services;
 
 namespace repetitorbot.Handlers;
 
-internal class AnswerQuestionHandler(IQuizEngine quizEngine) : IMiddleware
+internal class QuizQuestionAnswerHandler(IQuizEngine quizEngine) : IMiddleware
 {
     public async Task Invoke(Context context, UpdateDelegate next)
     {

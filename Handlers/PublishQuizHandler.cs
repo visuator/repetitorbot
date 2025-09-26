@@ -1,26 +1,43 @@
 
 using Microsoft.EntityFrameworkCore;
+using repetitorbot.Constants;
 using repetitorbot.Entities.States;
+using Telegram.Bot;
 
 namespace repetitorbot.Handlers;
 
-internal class PublishQuizHandler(AppDbContext dbContext) : IMiddleware
+internal class PublishQuizHandler(ITelegramBotClient client, AppDbContext dbContext) : IMiddleware
 {
-    private const int ItemsPerPage = 6;
     public async Task Invoke(Context context, UpdateDelegate next)
     {
-        var count = await dbContext.Quizes.CountAsync(x => !x.Published && x.UserId == context.User.Id);
-        var pages = (int)Math.Ceiling(count / (double)ItemsPerPage);
-
-        context.State = new PublishSelectQuizState()
+        if (context.Update.CallbackQuery is not { Data: string data })
         {
-            CurrentPage = 1,
-            ItemsPerPage = ItemsPerPage,
-            PagesCount = pages,
-            WherePublished = false,
-            OnlyFromUser = true,
-            UserId = context.User.Id
-        };
+            return;
+        }
+
+        if (!Guid.TryParse(data.AsSpan()[Callback.QuizIdPrefix.Length..], out var quizId))
+        {
+            return;
+        }
+
+        if (context.State is not PublishSelectQuizState { MessageId: int messageId, UserId: long userId })
+        {
+            return;
+        }
+
+        var quiz = await dbContext.Quizes.SingleAsync(x => x.Id == quizId);
+        quiz.Published = true;
+        await dbContext.SaveChangesAsync();
+
+        await client.DeleteMessage(
+            chatId: context.Update.GetChatId(),
+            messageId: messageId
+        );
+
+        await client.SendMessage(
+            chatId: context.Update.GetChatId(),
+            text: "Опросник опубликован"
+        );
 
         await next(context);
     }

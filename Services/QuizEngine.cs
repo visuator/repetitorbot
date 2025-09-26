@@ -1,5 +1,3 @@
-using repetitorbot.Entities.States;
-
 namespace repetitorbot.Services;
 
 internal interface IQuizEngine
